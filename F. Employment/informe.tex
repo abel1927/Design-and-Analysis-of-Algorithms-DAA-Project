@@ -1,0 +1,190 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{hyperref}
+\usepackage[a4paper]{geometry}
+\geometry{top=1.0cm, bottom=2.0cm, left=1.25cm, right=1.25cm}
+\usepackage{amsmath}
+
+\title{DAA-Employment\\
+ Problem 1214/F}
+\author{Abel Molina S\'anchez C411}
+\date{Julio 2022}
+
+\begin{document}
+
+\maketitle
+
+\section{Descripci\'on del problema}
+
+\textbf{Descripci\'on completa:} \url{https://codeforces.com/problemset/problem/1214/F}\\
+
+Se tienen $m$ ciudades, $n$ puestos  de trabajos ubicados en algunas de esas ciudades y $n$ candidatos a ocupar dichos puestos de trabajo, cada uno de los cuales vive en una de las $m$ ciudades. Las ciudades est\'an numeradas de $1-m$ y tienen disposici\'on circular, la ciudad $i$ es adyacente a la $i+i$ para $i\in 0...m-1$, la ciudad $m$ es adyacente a $1$.\\
+Se quiere ubicar a cada trabajador en un puesto de trabajo de forma tal que se minice la distancia total que separa las casas del trabajo. \\
+
+\textbf{Entrada:}\\
+
+Línea 1: $m$, $n$ $(1\leq m\leq 10^9, 1\leq n\leq 200000)$: cantidad de ciudades y cantidad de vacantes.\\
+
+Línea 2: $n$ enteros $a_1,a_2,a_3,…,a_n (1\leq a_i\leq m)$: ciudades donde se encuentran las vacantes.\\
+
+Línea 3: $n$ enteros $b_1,b_2,b_3,…,b_n (1\leq b_i\leq m)$: ciudades donde viven los candidatos.\\
+
+\textbf{Salida:}\\
+
+Línea 1: La distancia total mínima.\\
+
+Línea 2: $n$ enteros diferentes de $1$ a $n$. El i-ésimo de ellos debería ser el índice de candidato que debería trabajar en el i-ésimo lugar de trabajo.
+
+
+\section{An\'alisis del problema}
+
+Se tiene un problema de optimizaci\'on, donde se busca minizar un valor, en este caso la distancia total.\\
+
+Hay que hacer una distribuci\'on de los de los candidatos entre las plazas de tal forma que esto ocurra, teniendo en cuenta que la disposici\'on del arreglo de ciudades es circular.\\
+
+ Distancia: Sean $x$, $y$ dos puntos dentro del arreglo de ciudades, como la distancia es sim\'etrica, digamos $x<y$, la distancia m\'inima $d(x,y)$ va a estar dada por:\\
+ 
+ 
+    $min(d1,d2)$: $d1 = y-x$ y $d2 = x+m-y$\\
+    
+Sentido: En el c\'irculo de ciudades, vamos a decir que un punto $x'$ est\'a a la derecha de $x$ si la distancia de $x'$ a $x$ es menor por la derecha, viceversa con la izquierda.\\
+    
+%Si representamos la situaci\'on circularmente, ser\'ia, marcando el 0-M como frontera, caminar en un sentido o en otro.(Los dos caminos que unen dos v\'ertices dentro de un ciclo en un grafo).
+
+
+\section{Enfoques. Soluciones}
+
+\textit{Fuerza bruta:} Como tenemos $n$ candidatos y $n$ plazas ya definidas, la finalidad del problema es buscar la distribuci\'on \'optima, y esto se puede lograr generando todas las distribuciones de candidatos en vacantes, calculando la distancia total en la misma, y qued\'andonos con la menor. De esta forma se explora todo el universo de soluciones. Como en este caso, tenemos que son $n$ candidatos distintos a distribuir en $n$ puestos distintos, sin repetici\'on, entonces tenemos que todas las posibles distribuciones son las Permutaciones de $n$. Generar las $n!$ permutaciones hace que sea solo posible trabajar en casos con $n$ peque\~no$(10)$.\\
+\textit{C\'odigo: brute\_force.py}\\
+
+
+\textit{Idea2}: Ordenar las vacantes y candidatos por orden de ciudad, y emparejar a cada candidato con la vacante libre a menor distancia.\\ 
+En un an\'alisis de casos, esta idea no result\'o ser v\'alida para el problema.\\
+
+Contraejemplo:\\\
+
+ciudades: 1-10\\
+vacante en: 4,4,7,7,9 \\ 
+candidatos en: 2,2,3,5,7,8\\
+
+Siguiento este c\'alculo la distancia total dar\'ia 11, mientras que en un an\'alisis de la distribuci\'on de puntos podemos encontrar r\'apidamente una cuya distancia total es $9<11$ y que no sigue esta estructura.\\
+
+\textbf{Soluci\'on:} Esta soluci\'on se basa en la siguiente idea que tiene que ser demostrada: para cada juego de puntos hay una distribuci\'on \'optima donde los candidatos ubicados en sus puestos de trabajo siguen el orden relativo a su ordenaci\'on por el n\'umero de ciudad. O sea, que para cada candidato, si su plaza es la plaza $i$, la del candidato siguiente es la plaza $(i+1)mod n $ siguiendo el sentido de ordenaci\'on(derecha, arreglo circular). Demostrando esta idea, para obtener el \'optimo solo ser\'ia necesario encontrar la posici\'on del primer candidato dentro de esta distribuci\'on, ya que el resto de candidatos $c_i$ estar\'an ubicados en las vacantes $v[(i+x)mod n]$ siendo $x$ la posici\'on del primero.\\
+
+\textit{Teorema} Si se ordenan los arreglos de candidatos y plazas por su n\'umero de ciudad, de menor a mayor(sentido derecha), existe una soluci\'on \'optima donde el orden relativo de los candidatos se mantiene. De forma tal que el $(i+1)mod n$ candidato trabaja en la plaza contigua del candidato $i$ en el sentido de ordenaci\'on.\\
+
+\textit{Demostraci\'on:} Sea Opt una distribuci\'on \'optima de candidatos y plazas, donde tenemos al menos dos candidatos y plazas. Si hubiera solo un par, es directo que tiene el orden relativo consigo mismo. Entonces, supongamos que tenemos al menos dos candidatos tal que no siguen el orden planteado. Si lo siguen, es directo.\\
+Sean $x$ y $x'$ tal que $x'>x$ (a la derecha de $x$), y que $x$ trabaja en la plaza $y$ y $x'$ en la plaza $y'$ , $y'<y$(a la izquierda de $y$). En este punto, planteamos la siguiente relaci\'on de distancias entre los puntos involucrados.
+
+Sean las distancias:\\
+$d = x<-->x'$, $d>0$, porque $x'\neq x$\\
+$e = y'<--> y$,\\
+%$g = x<--> y'$\\
+%$f = x'<-->y$\\
+$p = x<-->y$\\
+$q = x'<-->y'$\\
+$p^* = x<-->y'$\\
+$q^* = x'<-->x$\\
+
+La distancia acumulada que aporta el par al \'optimo ser\'a $p+q$. Hay que demostrar que en cualqueir situaci\'on, $p^*+q^* \leq p+q$, donde $p^*+q^*$ ser\'a la distancia acumulada que aporta este par en caso de hacer un swap entre los candidatos de $y'$ , $y$.\\
+
+Vamos a hacer una casu\'istica sobre los 5 posibles escenarios de distribuci\'on de los puntos:\\
+
+1) $y'..y...x...x'$\\
+    \begin{align}
+        q &= q^*+e\\
+        q^* &= q-e\\
+        p^* &= p+e\\
+        p^*+q^* &= p+q+e-e\\
+        p^*+q^* &= p+q
+    \end{align}
+ 
+
+2) $y'..x...y...x'$\\
+    \begin{align}
+        p^* &= e-p\\
+        q^* &= q-e\\
+        p^*+q^* &= q-p+e-e\\
+        p^*+q^* &= q-p\\
+        p^*+q^* &\leq q\\
+        p^*+q^* &\leq q+p
+    \end{align}
+    
+3) $x..y'...y...x'$\\
+    \begin{align}
+        q &= q^*+e\\
+        p &= p^*+e\\
+        p+q &= p^*+q^*+2e\\
+        p+q-2e &= p^*+q^*\\
+        p+q-2e &\geq p^*+q^*\\
+        p+q &\geq p^*+q^*
+    \end{align}
+
+4) $x..y'...x'...y$\\
+    \begin{align}
+        p &= p^*+e\\
+        e &= q+q^*\\
+        p+e &= p^*+q^*+e+q\\
+        p &= p^*+q^*+q\\
+        p-q &= p^*+q^*\\
+        p&\geq p^*+q^*\\
+        p+q&\geq p^*+q^*\\
+    \end{align}
+
+
+5) $x..x'...y'...y$\\
+    \begin{align}
+        p &= p^*+e\\
+        q &= q^*-e\\
+        p+q &= p^*+q^*+e-e\\
+        p+q &= p^*+q^*\\
+    \end{align}
+
+Si fueran iguales $x=x'$ es directo que un cambio relativo entre sus vacantes no afecta la distancia del \'optimo. \\
+
+Tenemos que en todos los escenarios, hacer un cambio entre los candidatos para $y$ y $y'$, o lo que es lo mismo, colocarlos en el orden relativo, no aumenta la distancia del \'optimo, la mantiene, o la disminuye. No se explicita que $x$, $x'$, $y$, $y'$ sean contiguos porque est\'an abarcados, pero en el escenario en que no los fueran, entonces, habr\'ia al menos un $x''$ intermedio, que, o bien ya est\'a en el orden relativo con ambos, o se encuentra en estos casos con $x$ o $x'$, haciendo seg\'un convenga $x=x''$ o $x'=x''$ se seguen los mismo pasos y se construye el orden planteado.\\
+Con lo cual, existe un \'optimo para cada juego de puntos que sigue la distribuci\'on planteada.\\
+
+El algoritmo hace lo siguiente:\\
+
+\begin{verbatim}
+    1. Se ordenan los candidatos y las vacantes por ciudad.
+    2. Se itera por las vacantes y asigna el primer candidato.
+    3. Se completan el resto de vacantes calculando la distancia acumulada.
+      3.1 Si disminuye la distancia, se actualiza y se guarda la distribución.
+    4. Devuelve la distancia y la distribución final.
+\end{verbatim}
+\textit{C\'odigo: solution.py}\\
+
+\textit{Demostraci\'on de correctitud:} El algoritmo haya el \'optimo ya que itera por todas las posibles distribuciones de candidatos por vacantes que siguen el orden planteado, qued\'andose de ellas con la de menor distancia acumulada. Por el teorema anterior se demostr\'o que existe un \'optimo que sigue esta distribuci\'on, este tiene que ser el de menor distancia acumulada, ya que es \'optimo.\\
+Igualmente, podemos ver que, sea $Opt$ una distribuc\'on \'optima para el problema y sea $C$ la distribuci\'on hayada por el algoritmo anterior, si $Opt$ es distinto de $C$, existe una secuencia finita de pasos para convertir $Opt$ en $C$ que es la discrita en la demostraci\'on anterior.\\
+
+
+\textit{Complejidad temporal:} La ordenación es $O(nlogn)$ y luego iterar por cada una de las vacantes para el primer candidato es $O(n)$ y en cada una se completa la distribuci\'on de los $n$ candidatos con lo cual, tenemos $O(n^2)$, quendando la complejidad temporal del algoritmo en $O(n^2)$.
+
+
+\section{Generador y tester}
+
+En la carpeta \textit{.test/} se encuentran 2 subcarpetas \textit{in/, out/}, cada una contiene repectivamente, las entradas generadas y las salidas obtenidas por el algoritmo de fuerza bruta.\\
+Tambi\'en se incluyen algunos casos tomados del tester del codeforce, estos se identifican por su nombre: \textit{$t<num>cf$}.\\
+
+El generador de casos \textit{test/test\_generator.py}, genera juegos de datos de entrada de forma completamente aleatoria, siempre dentro de las restricciones del problema, o permite ingresar cotas manualmente. La cantidad de candidatos est\'a restringida a $10$, por el car\'acter factorial del algoritmo de fuerza bruta con que se generan las soluciones.\\
+
+El generador coloca los archivos \textit{.in} y \textit{.out} en sus carpetas correspondientes.\\
+
+Para validar las soluciones de los algoritmos, se utiliza el \textit{checker.py} que da dos opciones para los casos de prueba:\\
+1) Correr un caso espec\'ifico o \\
+2) correr todos los casos.\\
+La estrategia seguida para validar las soluciones fue la siguiente: Se leen los archivo de entrada y salida del test hecho por el generador y el archivo de soluci\'on, se comprueba si el valor dado como \'optimo coincide, de hacerlo, se pasa a comprobar la distribuci\'on dada. Si esta coincide con la del generador, se acepta, sino, se comprueba que el valor \'optimo de esa distribuci\'on coincide con el valor \'optimo real.\\
+
+\textbf{Apuntes}\\
+
+. El script \textit{all\_optimal\_bf.py} se utiliz\'o para visualizar todas las soluciones \'optimas de un problema en busca de similitudes.\\ 
+
+. Para el problema abordado hay soluciones que tienen una complejidad temporal inferior, al menos de $O(nlogn)$ bas\'andose en la idea expresada. Algunas est\'an presentes en el codeforce, y aunque las analic\'e, no logr\'e comprenderlas con la profunidad requerida como para defenderlas como propia.
+
+
+
+\end{document}
