@@ -1,6 +1,6 @@
 # Design-and-Analysis-of-Algorithms-DAA-Project
 
-Three problems with solution analysis and eficiency demostration. Solutions implementation 
+Three problems with solution analysis and efficiency demostration. Solutions implementation 
 
 ##
 
